@@ -1,17 +1,32 @@
 const express = require("express");
-const cors = require("cors");
+const multer = require("multer");
+const axios = require("axios");
+const FormData = require("form-data");
+const fs = require("fs");
 
 const app = express();
-app.use(cors());
-app.use(express.json());
+const upload = multer({ dest: "temp/" });
 
-app.post("/api/message", (req, res) => {
-  res.json({
-    reply: `Server received: ${req.body.message}`
-  });
+app.post("/upload", upload.single("file"), async (req, res) => {
+  try {
+    const formData = new FormData();
+    formData.append(
+      "file",
+      fs.createReadStream(req.file.path)
+    );
+
+    const response = await axios.post(
+      "https://yourdomain.com/upload.php",
+      formData,
+      { headers: formData.getHeaders() }
+    );
+
+    fs.unlinkSync(req.file.path); // delete temp file
+
+    res.json(response.data);
+  } catch (err) {
+    res.status(500).json({ error: "Upload failed" });
+  }
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log("Server running on port", PORT);
-});
+app.listen(5000, () => console.log("Server running"));
