@@ -1,32 +1,55 @@
-const express = require("express");
-const multer = require("multer");
-const axios = require("axios");
-const FormData = require("form-data");
-const fs = require("fs");
+import express from 'express'
+import cors from 'cors'
+import multer from 'multer'
+import { createClient } from '@supabase/supabase-js'
+import dotenv from 'dotenv'
 
-const app = express();
-const upload = multer({ dest: "temp/" });
+dotenv.config()
 
-app.post("/upload", upload.single("file"), async (req, res) => {
+const app = express()
+app.use(cors())
+app.use(express.json())
+
+const upload = multer({ storage: multer.memoryStorage() })
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+)
+
+app.post('/upload', upload.single('file'), async (req, res) => {
   try {
-    const formData = new FormData();
-    formData.append(
-      "file",
-      fs.createReadStream(req.file.path)
-    );
+    const file = req.file
 
-    const response = await axios.post(
-      "https://yourdomain.com/upload.php",
-      formData,
-      { headers: formData.getHeaders() }
-    );
+    if (!file) {
+      return res.status(400).json({ message: 'No file provided' })
+    }
 
-    fs.unlinkSync(req.file.path); // delete temp file
+    const filePath = `uploads/${Date.now()}-${file.originalname}`
 
-    res.json(response.data);
+    const { error } = await supabase.storage
+      .from('uploads')
+      .upload(filePath, file.buffer, {
+        contentType: file.mimetype
+      })
+
+    if (error) {
+      return res.status(500).json({ error: error.message })
+    }
+
+    const { data } = supabase.storage
+      .from('uploads')
+      .getPublicUrl(filePath)
+
+    res.json({
+      message: 'Upload successful',
+      url: data.publicUrl
+    })
   } catch (err) {
-    res.status(500).json({ error: "Upload failed" });
+    res.status(500).json({ error: err.message })
   }
-});
+})
 
-app.listen(5000, () => console.log("Server running"));
+app.listen(process.env.PORT, () => {
+  console.log(`Backend running`)
+})
