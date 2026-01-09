@@ -2,14 +2,11 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
-  
+  "main": "server.js",
   "type": "module",
   "scripts": {
     "start": "node server.js"
-  }
-
-,
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -17,7 +14,7 @@
     "@supabase/supabase-js": "^2.90.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
-    "express": "^5.2.1",
+    "express": "^4.19.2",
     "multer": "^2.0.2"
   }
 }
