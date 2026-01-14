@@ -1,8 +1,8 @@
 import express from 'express'
 import cors from 'cors'
 import multer from 'multer'
-import { createClient } from '@supabase/supabase-js'
 import dotenv from 'dotenv'
+import supabase from './config/supabase.js'
 
 dotenv.config()
 
@@ -12,10 +12,7 @@ app.use(express.json())
 
 const upload = multer({ storage: multer.memoryStorage() })
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-)
+
 
 // ✅ ROOT ROUTE
 app.get('/', (req, res) => {
