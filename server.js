@@ -2,7 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import multer from 'multer'
 import dotenv from 'dotenv'
-import {supabase} from './config/supabase.js'
+import {supabase} from './config/Supabase.js'
 
 dotenv.config()
 
